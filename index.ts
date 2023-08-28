@@ -111,7 +111,11 @@ async function printResponse(res: Response): Promise<void> {
 
     const contentType = res.headers.get('content-type')?.toLowerCase()
     if (contentType?.startsWith('application/json')) {
-        console.log(cj(await res.json()))
+        try {
+            console.log(cj(await res.json()))
+        } catch {
+            console.log(await res.text())
+        }
     } else {
         let text = await res.text()
         if (text) {
