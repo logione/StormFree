@@ -1,0 +1,46 @@
+{
+  "name": "@logi.one/stormfree",
+  "version": "0.1.0",
+  "description": "Forever free, ultra-lightweight Rest API tester for node",
+  "dependencies": {
+    "color-json": "^3.0.5",
+    "pretty-html-log": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.7",
+    "typescript": "^5.2.2"
+  },
+  "files": [
+    "/dist",
+    "README.md",
+    "/LICENSE"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build-watch": "tsc --watch",
+    "prepublishOnly": "rm -r -f dist ; tsc -p tsconfig.build.json"
+  },
+  "author": "LogiONE Sàrl",
+  "license": "ISC",
+  "keywords": [
+    "api",
+    "http",
+    "https",
+    "JSON",
+    "xml",
+    "rest",
+    "client",
+    "node",
+    "typescript",
+    "thunderclient",
+    "thunder",
+    "httpie",
+    "postman"
+  ]
+}
