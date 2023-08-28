@@ -111,11 +111,13 @@ async function printResponse(res: Response): Promise<void> {
 
     const contentType = res.headers.get('content-type')?.toLowerCase()
     if (contentType?.startsWith('application/json')) {
+        const json = await res.json()
         try {
-            console.log(cj(await res.json()))
+            console.log(cj(json))
         } catch {
-            console.log(await res.text())
+            console.log(json)
         }
+        res.json = () => Promise.resolve(json)
     } else {
         let text = await res.text()
         if (text) {
@@ -127,6 +129,7 @@ async function printResponse(res: Response): Promise<void> {
             }
             console.log(text)
         }
+        res.text = () => Promise.resolve(text)
     }
     console.log(`\n${'-'.repeat(process.stdout.columns)}\n`)
 }
