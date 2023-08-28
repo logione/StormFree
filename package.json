@@ -1,6 +1,6 @@
 {
   "name": "@logi.one/stormfree",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Forever free, ultra-lightweight Rest API tester for node",
   "dependencies": {
     "color-json": "^3.0.5",
