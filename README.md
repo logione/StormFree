@@ -84,23 +84,24 @@ await put('https://my-api/users/1', {
 })
 ```
 
-# Integration with tests runners
+# Integration with test runners
 
-Storm Free integrates nicely with test runners tools like Jasmine.
+Storm Free integrates nicely with test runners. Test runners can be useful to select which request to run.
 
 ```javascript
-describe('Users management', () => {
-    it('Get all users', async () => {
-        const { ok } = await get('https://my-api/users')
-        expect(ok).toBeTrue()
-    })
+import { test } from 'node:test'
+import assert from 'node:assert'
 
-    it('Try to delete a user without authenticiation', async () => {
-        const result = await del('https://my-api/users/1')
-        // result is the original Response from fetch 
-        expect(result.ok).toBeFalse()
-        expect(result.status).toBe(401)
-    })
+test('Get all users', { only: true }, async () => {
+    const { ok } = await get('https://my-api/users')
+    assert(ok)
+})
+
+test('Try to delete a user without authenticiation', async () => {
+    const result = await del('https://my-api/users/1')
+    // result is the original Response from fetch 
+    assert(!result.ok)
+    assert(result.status === 401)
 })
 ```
 
