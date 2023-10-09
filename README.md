@@ -59,7 +59,7 @@ await get('https://my-api/users', undefined,
     'name=john doe'
 )
 
-// all equals the following request
+// all equal the following request
 await get('https://my-api/users?active=true&name=john%20doe')
 ```
 
@@ -84,20 +84,34 @@ await put('https://my-api/users/1', {
 })
 ```
 
+Prevent request and status to be printed :
+
+```javascript
+await get('https://my-api/users',
+    { print: { request: false, status: false, headers: true, body: true } }
+)
+```
+
+Prevent any printing :
+
+```javascript
+await get('https://my-api/users', { print: false })
+````
+
 # Integration with test runners
 
 Storm Free integrates nicely with test runners. Test runners can be useful to select which request to run.
 
 ```javascript
-import { test } from 'node:test'
+import { it } from 'node:test'
 import assert from 'node:assert'
 
-test('Get all users', { only: true }, async () => {
+it.only('Get all users', async () => {
     const { ok } = await get('https://my-api/users')
     assert(ok)
 })
 
-test('Try to delete a user without authenticiation', async () => {
+it('Try to delete a user without authenticiation', async () => {
     const result = await del('https://my-api/users/1')
     // result is the original Response from fetch 
     assert(!result.ok)
@@ -105,4 +119,4 @@ test('Try to delete a user without authenticiation', async () => {
 })
 ```
 
-*If you don't want requests to be printed, you can use [@logi.one/rest-client](https://www.npmjs.com/package/@logi.one/rest-client) instead*
+*If you search a rest-client that doesn't print anything, you can use [@logi.one/rest-client](https://www.npmjs.com/package/@logi.one/rest-client) instead*
