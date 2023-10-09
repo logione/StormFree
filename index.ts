@@ -18,6 +18,14 @@ interface RequestOptionsWithBody extends RequestOptionsBase {
 interface RequestOptionsBase {
     token?: string,
     headers?: Record<string, string>
+    print?: PrintOptions | boolean
+}
+
+type PrintOptions = {
+    request: boolean
+    status: boolean
+    headers: boolean
+    body: boolean
 }
 
 type QueryValue = string | number | boolean
@@ -91,45 +99,85 @@ async function request(method: Verb, url: string, options: RequestOptions = {}, 
         headers.Authorization = `Bearer ${options.token}`
     }
 
-    printRequest(method, url)
+    const printOptions = formatPrintOptions(options.print)
+    if (printOptions.request) {
+        printRequest(method, url)
+    }
     const res = await fetch(url, requestInit)
-    await printResponse(res)
+    await printResponse(res, printOptions)
     return res
 }
+
+function formatPrintOptions(options: PrintOptions | undefined | boolean): PrintOptions {
+    switch (options) {
+        case undefined :
+        case true :
+            return {
+                request: true,
+                status: true,
+                headers: true,
+                body: true
+            }
+        
+        case false:
+            return {
+                request: false,
+                status: false,
+                headers: false,
+                body: false
+            }
+        
+        default:
+            return options
+    }
+}
+
 
 function printRequest(method: Verb, url: string): void {
     console.log(`\x1b[35m${method} \x1b[0m${url}\n`)
 }
 
-async function printResponse(res: Response): Promise<void> {
-    const statusColor = res.ok ? 32 : 31 
-    console.log(`\x1b[${statusColor}m${res.status} ${res.statusText}\x1b[0m\n`)
-    for (const [name, value] of res.headers) {
-        console.log(`\x1b[36m${name}:\x1b[0m ${value}`)
+async function printResponse(res: Response, printOptions: PrintOptions): Promise<void> {
+    if (!printOptions.body && !printOptions.headers && !printOptions.status) {
+        return
     }
-    console.log('')
 
-    const contentType = res.headers.get('content-type')?.toLowerCase()
-    if (contentType?.startsWith('application/json')) {
-        const json = await res.json()
-        try {
-            console.log(cj(json))
-        } catch {
-            console.log(json)
+    const statusColor = res.ok ? 32 : 31
+    if (printOptions.status) {
+        console.log(`\x1b[${statusColor}m${res.status} ${res.statusText}\x1b[0m\n`)
+    }
+    if (printOptions.headers) {
+        for (const [name, value] of res.headers) {
+            console.log(`\x1b[36m${name}:\x1b[0m ${value}`)
         }
-        res.json = () => Promise.resolve(json)
-    } else {
-        let text = await res.text()
-        if (text) {
-            if (contentType?.startsWith('text/html') || contentType?.startsWith('application/xml')) {
-                try {
-                    text = highlight(text)
-                } catch (err) {
-                }
+    }
+    if (printOptions.status || printOptions.headers) {
+        console.log('')
+    }
+
+    if (printOptions.body) {
+        const contentType = res.headers.get('content-type')?.toLowerCase()
+        if (contentType?.startsWith('application/json')) {
+            const json = await res.json()
+            try {
+                console.log(cj(json))
+            } catch {
+                console.log(json)
             }
-            console.log(text)
+            res.json = () => Promise.resolve(json)
+        } else {
+            let text = await res.text()
+            if (text) {
+                if (contentType?.startsWith('text/html') || contentType?.startsWith('application/xml')) {
+                    try {
+                        text = highlight(text)
+                    } catch (err) {
+                    }
+                }
+                console.log(text)
+            }
+            res.text = () => Promise.resolve(text)
         }
-        res.text = () => Promise.resolve(text)
     }
     console.log(`\n${'-'.repeat(process.stdout.columns)}\n`)
 }
