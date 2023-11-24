@@ -19,6 +19,7 @@ interface RequestOptionsBase {
     token?: string,
     headers?: Record<string, string>
     print?: PrintOptions | boolean
+    query?: Query
 }
 
 type PrintOptions = {
@@ -29,28 +30,28 @@ type PrintOptions = {
 }
 
 type QueryValue = string | number | boolean
-type Query = ([string, QueryValue] | { key: string, value: QueryValue } | string)[]
+type Query = Record<string, QueryValue | QueryValue[]> | string | string[]
 type Verb = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
 export type RequestOptions = RequestOptionsBase | RequestOptionsJSON | RequestOptionsWithBody
 
-export async function get(url: string, options?: RequestOptionsBase, ...query: Query): Promise<Response> {
-    return request('GET', url, options, query)
+export async function get(url: string, options?: RequestOptionsBase): Promise<Response> {
+    return request('GET', url, options)
 }
 
-export async function del(url: string, options?: RequestOptionsBase, ...query: Query): Promise<Response> {
-    return request('DELETE', url, options, query)
+export async function del(url: string, options?: RequestOptionsBase): Promise<Response> {
+    return request('DELETE', url, options)
 }
 
-export async function post(url: string, options?: RequestOptions, ...query: Query): Promise<Response> {
-    return request('POST', url, options, query)
+export async function post(url: string, options?: RequestOptions): Promise<Response> {
+    return request('POST', url, options)
 }
 
-export async function put(url: string, options?: RequestOptions, ...query: Query): Promise<Response> {
-    return request('PUT', url, options, query)
+export async function put(url: string, options?: RequestOptions): Promise<Response> {
+    return request('PUT', url, options)
 }
 
-async function request(method: Verb, url: string, options: RequestOptions = {}, query: Query): Promise<Response> {
+async function request(method: Verb, url: string, options: RequestOptions = {}): Promise<Response> {
     const headers = options.headers || {}
     headers['User-Agent'] = headers['User-Agent'] || 'node'
 
@@ -59,25 +60,8 @@ async function request(method: Verb, url: string, options: RequestOptions = {}, 
         method: method
     }
 
-    if (query && query.length > 0) {
-        if (url.includes('?')) {
-            if (!url.endsWith('&')) {
-                url += '&'
-            }
-        } else {
-            url += '?'
-        }
-        for (let q of query) {
-            if (typeof q === 'string') {
-                q = [q.slice(0, q.indexOf('=')), q.slice(q.indexOf('=') + 1)]
-            }
-            if ('key' in q) {
-                url += `${q.key}=${encodeURIComponent(q.value)}&`
-            } else {
-                url += `${q[0]}=${encodeURIComponent(q[1])}&`
-            }
-        }
-        url = url.slice(0, -1)
+    if (options.query) {
+        url = getUrlWithQuery(url, options.query)
     }
     
     if ('body' in options && options.body) {
@@ -106,6 +90,43 @@ async function request(method: Verb, url: string, options: RequestOptions = {}, 
     const res = await fetch(url, requestInit)
     await printResponse(res, printOptions)
     return res
+}
+
+
+function getUrlWithQuery(url: string, query: Query): string {
+    if (!query) {
+        return url
+    }
+
+    if (url.includes('?')) {
+        if (!url.endsWith('&')) {
+            url += '&'
+        }
+    } else {
+        url += '?'
+    }
+
+    if (typeof query === 'string') {
+        return url + query
+    }
+
+    if (Array.isArray(query)) {
+        for (const q of query) {
+            url += `${q}&`
+        }
+    } else {
+        for (const key in query) {
+            let values = query[key]
+            if (!Array.isArray(values)) {
+                values = [values]
+            }
+            for (const value of values) {
+                url += `${key}=${encodeURIComponent(value)}&`
+            }
+        }
+    }
+
+    return url.slice(0, -1)
 }
 
 function formatPrintOptions(options: PrintOptions | undefined | boolean): PrintOptions {
