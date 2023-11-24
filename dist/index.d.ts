@@ -12,15 +12,20 @@ interface RequestOptionsWithBody extends RequestOptionsBase {
 interface RequestOptionsBase {
     token?: string;
     headers?: Record<string, string>;
+    print?: PrintOptions | boolean;
+    query?: Query;
 }
+type PrintOptions = {
+    request: boolean;
+    status: boolean;
+    headers: boolean;
+    body: boolean;
+};
 type QueryValue = string | number | boolean;
-type Query = ([string, QueryValue] | {
-    key: string;
-    value: QueryValue;
-} | string)[];
+type Query = Record<string, QueryValue | QueryValue[]> | string | string[];
 export type RequestOptions = RequestOptionsBase | RequestOptionsJSON | RequestOptionsWithBody;
-export declare function get(url: string, options?: RequestOptionsBase, ...query: Query): Promise<Response>;
-export declare function del(url: string, options?: RequestOptionsBase, ...query: Query): Promise<Response>;
-export declare function post(url: string, options?: RequestOptions, ...query: Query): Promise<Response>;
-export declare function put(url: string, options?: RequestOptions, ...query: Query): Promise<Response>;
+export declare function get(url: string, options?: RequestOptionsBase): Promise<Response>;
+export declare function del(url: string, options?: RequestOptionsBase): Promise<Response>;
+export declare function post(url: string, options?: RequestOptions): Promise<Response>;
+export declare function put(url: string, options?: RequestOptions): Promise<Response>;
 export {};
