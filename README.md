@@ -39,25 +39,14 @@ await get('https://my-api/users')
 Make a request with query parameters :
 
 ```javascript
-// using key/value objects
-await get(
-    'https://my-api/users', undefined,
-    { key: 'active', value: true },
-    { key: 'name', value: 'john doe' }
-)
+// using object
+await get('https://my-api/users', { query: { active: true, name: 'john doe' }})
 
-// using tuples
-await get(
-    'https://my-api/users', undefined,
-    ['active', true],
-    ['name', 'john doe']
-)
+// using array
+await get('https://my-api/users', { query: ['active=true', 'name=john%20doe']})
 
-// or using strings
-await get('https://my-api/users', undefined,
-    'active=true',
-    'name=john doe'
-)
+// or using string
+await get('https://my-api/users', { query: 'active=true&name=john%20doe' })
 
 // all equal the following request
 await get('https://my-api/users?active=true&name=john%20doe')
