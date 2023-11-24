@@ -1,3 +1,4 @@
+import { Search } from './search.js';
 export declare class RequestError extends Error {
     readonly status: number;
     readonly response: Response;
@@ -13,7 +14,7 @@ interface RequestOptionsBase {
     token?: string;
     headers?: Record<string, string>;
     print?: PrintOptions | boolean;
-    query?: Query;
+    search?: Search;
 }
 type PrintOptions = {
     request: boolean;
@@ -21,8 +22,6 @@ type PrintOptions = {
     headers: boolean;
     body: boolean;
 };
-type QueryValue = string | number | boolean;
-type Query = Record<string, QueryValue | QueryValue[]> | string | string[];
 export type RequestOptions = RequestOptionsBase | RequestOptionsJSON | RequestOptionsWithBody;
 export declare function get(url: string, options?: RequestOptionsBase): Promise<Response>;
 export declare function del(url: string, options?: RequestOptionsBase): Promise<Response>;

@@ -1,5 +1,6 @@
 import cj from 'color-json'
 import { highlight } from 'pretty-html-log'
+import { Search, appendSearchToURL } from './search.js'
 
 export class RequestError extends Error {
     constructor(message: string, readonly status: number, readonly response: Response) {
@@ -19,7 +20,7 @@ interface RequestOptionsBase {
     token?: string,
     headers?: Record<string, string>
     print?: PrintOptions | boolean
-    query?: Query
+    search?: Search
 }
 
 type PrintOptions = {
@@ -29,8 +30,6 @@ type PrintOptions = {
     body: boolean
 }
 
-type QueryValue = string | number | boolean
-type Query = Record<string, QueryValue | QueryValue[]> | string | string[]
 type Verb = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
 export type RequestOptions = RequestOptionsBase | RequestOptionsJSON | RequestOptionsWithBody
@@ -60,9 +59,7 @@ async function request(method: Verb, url: string, options: RequestOptions = {}):
         method: method
     }
 
-    if (options.query) {
-        url = getUrlWithQuery(url, options.query)
-    }
+    url = appendSearchToURL(url, options.search)
     
     if ('body' in options && options.body) {
         requestInit.body = options.body
@@ -90,43 +87,6 @@ async function request(method: Verb, url: string, options: RequestOptions = {}):
     const res = await fetch(url, requestInit)
     await printResponse(res, printOptions)
     return res
-}
-
-
-function getUrlWithQuery(url: string, query: Query): string {
-    if (!query) {
-        return url
-    }
-
-    if (url.includes('?')) {
-        if (!url.endsWith('&')) {
-            url += '&'
-        }
-    } else {
-        url += '?'
-    }
-
-    if (typeof query === 'string') {
-        return url + query
-    }
-
-    if (Array.isArray(query)) {
-        for (const q of query) {
-            url += `${q}&`
-        }
-    } else {
-        for (const key in query) {
-            let values = query[key]
-            if (!Array.isArray(values)) {
-                values = [values]
-            }
-            for (const value of values) {
-                url += `${key}=${encodeURIComponent(value)}&`
-            }
-        }
-    }
-
-    return url.slice(0, -1)
 }
 
 function formatPrintOptions(options: PrintOptions | undefined | boolean): PrintOptions {

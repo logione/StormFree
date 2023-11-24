@@ -36,17 +36,20 @@ Make a simple GET request :
 await get('https://my-api/users')
 ````
 
-Make a request with query parameters :
+Make a request with url search parameters :
 
 ```javascript
 // using object
-await get('https://my-api/users', { query: { active: true, name: 'john doe' }})
+await get('https://my-api/users', { search: { active: true, name: 'john doe' }})
 
 // using array
-await get('https://my-api/users', { query: ['active=true', 'name=john%20doe']})
+await get('https://my-api/users', { search: [['active', 'true'], ['name', 'john%20doe']]})
+
+// using URLSearchParams
+await get('https://my-api/users', { search: new URLSearchParams({ active: 'true', name: 'john doe' }) })
 
 // or using string
-await get('https://my-api/users', { query: 'active=true&name=john%20doe' })
+await get('https://my-api/users', { search: 'active=true&name=john%20doe' })
 
 // all equal the following request
 await get('https://my-api/users?active=true&name=john%20doe')
